@@ -3,6 +3,7 @@ package com.waterrepair.incident;
 import com.waterrepair.auth.AuthService;
 import com.waterrepair.auth.Roles;
 import com.waterrepair.network.ImpactService;
+import com.waterrepair.topology.TopologyQueryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
@@ -25,15 +26,27 @@ public class IncidentController {
     private final IncidentQueryService queryService;
     private final PressureReviewService reviewService;
     private final ImpactService impactService;
+    private final TopologyQueryService topologyQuery;
 
+    /** 兼容既有 4 参构造器；事故候选将直接按在线现图计算。 */
     public IncidentController(IncidentService incidentService,
                               IncidentQueryService queryService,
                               PressureReviewService reviewService,
                               ImpactService impactService) {
+        this(incidentService, queryService, reviewService, impactService, null);
+    }
+
+    @org.springframework.beans.factory.annotation.Autowired
+    public IncidentController(IncidentService incidentService,
+                              IncidentQueryService queryService,
+                              PressureReviewService reviewService,
+                              ImpactService impactService,
+                              TopologyQueryService topologyQuery) {
         this.incidentService = incidentService;
         this.queryService = queryService;
         this.reviewService = reviewService;
         this.impactService = impactService;
+        this.topologyQuery = topologyQuery;
     }
 
     @Operation(summary = "调度确认线索形成事故（边界必须显式或来自已确认归属）")
@@ -64,11 +77,15 @@ public class IncidentController {
         return incidentService.addSource(id, request.reportId(), request.sourceType());
     }
 
-    @Operation(summary = "枚举当前事故边界的候选关阀组合与精确影响地址")
+    @Operation(summary = "枚举当前事故边界在其固定拓扑版本下的候选关阀组合与精确影响地址")
     @GetMapping("/{id}/candidate-isolations")
     public List<ImpactService.CandidateCombo> candidates(@PathVariable Long id) {
         Incident incident = incidentService.mustGet(id);
-        return impactService.candidateCombos(incident.getBoundarySegmentCodes());
+        if (topologyQuery == null || incident.getTopologyVersionCode() == null) {
+            return impactService.candidateCombos(incident.getBoundarySegmentCodes());
+        }
+        return topologyQuery.candidates(incident.getTopologyVersionCode(),
+                incident.getBoundarySegmentCodes());
     }
 
     @Operation(summary = "确认隔离方案（校验组合确实能隔离边界，并快照影响集合）")

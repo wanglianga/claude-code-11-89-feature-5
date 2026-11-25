@@ -35,6 +35,13 @@ public class PipeSegment {
     @Column(nullable = false)
     private Integer pressureTimeToleranceSeconds;
 
+    /**
+     * 拓扑可信状态：CONFIRMED（已测量复核，默认）/ UNKNOWN（相邻未测支管，
+     * 不进入权威连通计算，只能作为未知风险提示）。用可空列兼容旧库，null 视为 CONFIRMED。
+     */
+    @Column(length = 16)
+    private String topologyStatus;
+
     public PipeSegment() {
     }
 
@@ -76,5 +83,13 @@ public class PipeSegment {
 
     public Integer getPressureTimeToleranceSeconds() {
         return pressureTimeToleranceSeconds;
+    }
+
+    public String getTopologyStatus() {
+        return topologyStatus == null ? "CONFIRMED" : topologyStatus;
+    }
+
+    public void setTopologyStatus(String topologyStatus) {
+        this.topologyStatus = topologyStatus;
     }
 }

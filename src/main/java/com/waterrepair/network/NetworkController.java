@@ -1,5 +1,6 @@
 package com.waterrepair.network;
 
+import com.waterrepair.topology.TopologyQueryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,7 +25,9 @@ public class NetworkController {
     private final PressureDeviceRepository deviceRepo;
     private final PressureReadingRepository readingRepo;
     private final ImpactService impactService;
+    private final TopologyQueryService topologyQuery;
 
+    /** 兼容既有 8 参构造器；topologyVersion 参数将不生效。 */
     public NetworkController(NetworkNodeRepository nodeRepo,
                              PipeSegmentRepository segmentRepo,
                              ValveSpecRepository valveRepo,
@@ -33,6 +36,20 @@ public class NetworkController {
                              PressureDeviceRepository deviceRepo,
                              PressureReadingRepository readingRepo,
                              ImpactService impactService) {
+        this(nodeRepo, segmentRepo, valveRepo, addressRepo, landmarkRepo, deviceRepo,
+                readingRepo, impactService, null);
+    }
+
+    @org.springframework.beans.factory.annotation.Autowired
+    public NetworkController(NetworkNodeRepository nodeRepo,
+                             PipeSegmentRepository segmentRepo,
+                             ValveSpecRepository valveRepo,
+                             AddressPointRepository addressRepo,
+                             GeoLandmarkRepository landmarkRepo,
+                             PressureDeviceRepository deviceRepo,
+                             PressureReadingRepository readingRepo,
+                             ImpactService impactService,
+                             TopologyQueryService topologyQuery) {
         this.nodeRepo = nodeRepo;
         this.segmentRepo = segmentRepo;
         this.valveRepo = valveRepo;
@@ -41,6 +58,7 @@ public class NetworkController {
         this.deviceRepo = deviceRepo;
         this.readingRepo = readingRepo;
         this.impactService = impactService;
+        this.topologyQuery = topologyQuery;
     }
 
     @Operation(summary = "全部管网节点（水源/三通/阀门/末端）")
@@ -85,21 +103,29 @@ public class NetworkController {
         return readingRepo.findAll();
     }
 
-    public record ImpactRequest(List<String> valveCodes) {
+    public record ImpactRequest(List<String> valveCodes, String topologyVersion) {
     }
 
-    @Operation(summary = "给定关闭阀门集合，计算失压管段与精确受影响地址")
+    @Operation(summary = "给定关闭阀门集合，计算失压管段与精确受影响地址；可传 topologyVersion 按历史版本复算")
     @PostMapping("/impact")
     public ImpactService.ImpactResult impact(@RequestBody ImpactRequest request) {
+        if (topologyQuery != null
+                && request.topologyVersion() != null && !request.topologyVersion().isBlank()) {
+            return topologyQuery.evaluate(request.topologyVersion(), request.valveCodes());
+        }
         return impactService.evaluate(request.valveCodes());
     }
 
-    public record CandidateRequest(List<String> boundarySegmentCodes) {
+    public record CandidateRequest(List<String> boundarySegmentCodes, String topologyVersion) {
     }
 
-    @Operation(summary = "枚举隔离给定边界管段的最小候选关阀组合及各自影响集合")
+    @Operation(summary = "枚举隔离给定边界管段的最小候选关阀组合及各自影响集合；可传 topologyVersion")
     @PostMapping("/candidate-isolations")
     public List<ImpactService.CandidateCombo> candidates(@RequestBody CandidateRequest request) {
+        if (topologyQuery != null
+                && request.topologyVersion() != null && !request.topologyVersion().isBlank()) {
+            return topologyQuery.candidates(request.topologyVersion(), request.boundarySegmentCodes());
+        }
         return impactService.candidateCombos(request.boundarySegmentCodes());
     }
 

@@ -60,7 +60,10 @@ public class ImpactService {
     @Transactional(readOnly = true)
     public ImpactResult evaluate(Collection<String> closedValveCodes) {
         List<NetworkNode> nodes = nodeRepo.findAll();
-        List<PipeSegment> segments = segmentRepo.findAll();
+        // UNKNOWN 管段（相邻未测支管）不进入权威连通计算，避免把未确认住户纳入错误区域
+        List<PipeSegment> segments = segmentRepo.findAll().stream()
+                .filter(s -> !"UNKNOWN".equals(s.getTopologyStatus()))
+                .toList();
         List<AddressPoint> addresses = addressRepo.findAll();
 
         Set<String> closed = new HashSet<>();

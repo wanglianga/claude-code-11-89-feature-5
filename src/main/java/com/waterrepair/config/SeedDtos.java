@@ -22,7 +22,7 @@ public final class SeedDtos {
     }
 
     public record SegmentDto(String code, String name, String from, String to,
-                             Double pMin, Double pMax, Integer tolSec) {
+                             Double pMin, Double pMax, Integer tolSec, String topologyStatus) {
     }
 
     public record ValveDto(String code, String name, String nodeCode,
@@ -70,5 +70,16 @@ public final class SeedDtos {
 
     public record AccountDto(String username, String password, String displayName,
                              String role, String crewCode) {
+    }
+
+    public record TopologyCaseSeed(List<CaseIncidentDto> cases) {
+    }
+
+    public record CaseIncidentDto(String code, String title, String status,
+                                  List<String> boundarySegmentCodes,
+                                  List<String> valveCodes,
+                                  @com.fasterxml.jackson.annotation.JsonProperty("notify") Boolean sendNotify,
+                                  OffsetDateTime createdAt, OffsetDateTime confirmedAt,
+                                  OffsetDateTime closedAt, String note) {
     }
 }

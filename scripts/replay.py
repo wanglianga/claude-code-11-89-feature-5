@@ -172,8 +172,9 @@ def main():
           imp_v1["affectedAddressCodes"])
 
     _, imp_v3 = http("POST", "/api/network/impact", {"valveCodes": ["V3"]}, token=disp)
-    check("单关 V3 影响集合精确为 A06-A09",
-          imp_v3["affectedAddressCodes"] == ["A06", "A07", "A08", "A09"],
+    check("单关 V3 影响集合精确为 A06-A09 + S7 的 A14/A15（旧图共 6 户）",
+          imp_v3["affectedAddressCodes"] ==
+          ["A06", "A07", "A08", "A09", "A14", "A15"],
           imp_v3["affectedAddressCodes"])
 
     # ---------- 2. 受理与自动归属 ----------
@@ -270,8 +271,8 @@ def main():
 
     _, cand3 = http("GET", f"/api/incidents/{i3id}/candidate-isolations", token=disp)
     map3 = {"+".join(c["valveCodes"]): c["affectedAddressCodes"] for c in cand3}
-    check("I3(S3) 候选为 V3 且影响恰为 A06-A09，与 I2 边界分开",
-          map3.get("V3") == ["A06", "A07", "A08", "A09"], map3)
+    check("I3(S3) 候选为 V3 且影响恰为 A06-A09+A14/A15（旧图 6 户），与 I2 边界分开",
+          map3.get("V3") == ["A06", "A07", "A08", "A09", "A14", "A15"], map3)
     check("V2 不是 S3 的候选隔离组合", "V2" not in map3, list(map3))
 
     _, cand1 = http("GET", f"/api/incidents/{i1id}/candidate-isolations", token=disp)
@@ -286,7 +287,7 @@ def main():
     _, p1 = http("POST", f"/api/incidents/{i1id}/isolation-plans",
                  {"valveCodes": ["V1"]}, token=disp, expect=200)
     check("三个隔离方案均快照了影响地址",
-          len(p2["affectedAddressCodes"]) == 5 and len(p3["affectedAddressCodes"]) == 4
+          len(p2["affectedAddressCodes"]) == 5 and len(p3["affectedAddressCodes"]) == 6
           and len(p1["affectedAddressCodes"]) == 9)
 
     _, n2 = http("POST", f"/api/incidents/{i2id}/notify", {}, token=disp, expect=200)
@@ -294,7 +295,7 @@ def main():
     _, n1 = http("POST", f"/api/incidents/{i1id}/notify", {}, token=disp, expect=200)
     check("I2 通知 5 户 A01-A05",
           n2["sentCount"] == 5 and as_set(x["addressCode"] for x in n2["notifications"]) == set(s2))
-    check("I3 通知 4 户 A06-A09", n3["sentCount"] == 4)
+    check("I3 通知 6 户 A06-A09+A14/A15", n3["sentCount"] == 6)
     check("I1(V1) 通知 9 户（含 S1）", n1["sentCount"] == 9)
     _, n2b = http("POST", f"/api/incidents/{i2id}/notify", {}, token=disp, expect=200)
     check("通知按方案幂等，重复 notify 不重发", n2b["alreadyNotified"] is True and n2b["sentCount"] == 5)
@@ -638,8 +639,9 @@ def main():
     check("回放结束后不存在任何 HELD 占用（并发试探单已取消、各单已完成/关单）",
           not held_left, [(o["resourceType"], o["resourceCode"], o["incidentId"]) for o in held_left])
     _, incs = http("GET", "/api/incidents", token=disp)
-    check("共 3 个事故且全部 CLOSED",
-          len(incs) == 3 and all(i["status"] == "CLOSED" for i in incs),
+    inc_by_id = {i["id"]: i for i in incs}
+    check("回放创建的 I1/I2/I3 三个事故均 CLOSED（另播种有 S7/S8 拓扑工单，不计入本断言）",
+          all(inc_by_id[x]["status"] == "CLOSED" for x in (i1id, i2id, i3id)),
           [(i["code"], i["status"]) for i in incs])
 
     print("\n" + "#" * 78)

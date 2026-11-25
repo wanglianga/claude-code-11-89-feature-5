@@ -9,6 +9,7 @@ import com.waterrepair.report.AttributionJudgment;
 import com.waterrepair.report.AttributionJudgmentRepository;
 import com.waterrepair.report.RepairReport;
 import com.waterrepair.report.RepairReportRepository;
+import com.waterrepair.topology.TopologyQueryService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,7 +32,9 @@ public class IncidentService {
     private final AttributionJudgmentRepository judgmentRepo;
     private final AddressPointRepository addressRepo;
     private final ImpactService impactService;
+    private final TopologyQueryService topologyQuery;
 
+    /** 兼容既有直接装配 8 参构造器的调用/单测；版本能力退化为在线现图计算。 */
     public IncidentService(IncidentRepository incidentRepo,
                            IncidentSourceRepository sourceRepo,
                            IsolationPlanRepository planRepo,
@@ -40,6 +43,20 @@ public class IncidentService {
                            AttributionJudgmentRepository judgmentRepo,
                            AddressPointRepository addressRepo,
                            ImpactService impactService) {
+        this(incidentRepo, sourceRepo, planRepo, notificationRepo, reportRepo,
+                judgmentRepo, addressRepo, impactService, null);
+    }
+
+    @org.springframework.beans.factory.annotation.Autowired
+    public IncidentService(IncidentRepository incidentRepo,
+                           IncidentSourceRepository sourceRepo,
+                           IsolationPlanRepository planRepo,
+                           NotificationRecordRepository notificationRepo,
+                           RepairReportRepository reportRepo,
+                           AttributionJudgmentRepository judgmentRepo,
+                           AddressPointRepository addressRepo,
+                           ImpactService impactService,
+                           TopologyQueryService topologyQuery) {
         this.incidentRepo = incidentRepo;
         this.sourceRepo = sourceRepo;
         this.planRepo = planRepo;
@@ -48,6 +65,7 @@ public class IncidentService {
         this.judgmentRepo = judgmentRepo;
         this.addressRepo = addressRepo;
         this.impactService = impactService;
+        this.topologyQuery = topologyQuery;
     }
 
     @Transactional
@@ -104,6 +122,10 @@ public class IncidentService {
                 : "供水抢修事故（线索 " + reports.stream().map(RepairReport::getCode).collect(Collectors.joining(",")) + "）");
         incident.setBoundarySegmentCodes(boundary);
         incident.setStatus("CONFIRMED");
+        // 新事故固定当前 ACTIVE 拓扑版本；此后拓扑发布不擅自改变本事故的计算基准
+        if (topologyQuery != null) {
+            incident.setTopologyVersionCode(topologyQuery.currentActiveVersionCode());
+        }
         incident.setConfirmedBy(operator);
         incident.setConfirmationNote(req.note());
         incident.setConfirmedAt(OffsetDateTime.now());
@@ -158,8 +180,17 @@ public class IncidentService {
         if ("CLOSED".equals(incident.getStatus())) {
             throw ApiException.conflict("INCIDENT_CLOSED", "事故已结案，不能再变更隔离方案", null);
         }
-        ImpactService.ImpactResult impact =
-                impactService.assertIsolatesBoundary(valveCodes, incident.getBoundarySegmentCodes());
+        // 按事故固定的拓扑版本校验/快照，保证新旧拓扑边界并存期间口径一致
+        ImpactService.ImpactResult impact;
+        if (topologyQuery == null) {
+            impact = impactService.assertIsolatesBoundary(
+                    valveCodes, incident.getBoundarySegmentCodes());
+        } else {
+            String versionCode = incident.getTopologyVersionCode() == null
+                    ? TopologyQueryService.BASELINE_VERSION : incident.getTopologyVersionCode();
+            impact = topologyQuery.assertIsolates(versionCode, valveCodes,
+                    incident.getBoundarySegmentCodes());
+        }
 
         List<IsolationPlan> plans = planRepo.findByIncidentIdOrderByVersionNoAscIdAsc(incidentId);
         int nextVersion = plans.size() + 1;

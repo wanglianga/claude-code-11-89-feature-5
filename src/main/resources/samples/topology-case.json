@@ -1,0 +1,36 @@
+{
+  "cases": [
+    {
+      "code": "WO-2026-11",
+      "title": "文昌巷 S7 开挖抢修（竣工图将 S7 标为 V3 后的盲端）",
+      "status": "ISOLATED",
+      "boundarySegmentCodes": ["S7"],
+      "valveCodes": ["V3"],
+      "notify": true,
+      "createdAt": "2026-11-25T20:40:00+08:00",
+      "note": "开挖后现场探测发现 S7 并非盲端，另有通向 S8 的支管；工单引用旧拓扑 TOPO-V1。"
+    },
+    {
+      "code": "WO-2026-12",
+      "title": "文昌里 S8 水压偏低开放工单",
+      "status": "CONFIRMED",
+      "boundarySegmentCodes": ["S8"],
+      "valveCodes": ["V4"],
+      "notify": true,
+      "createdAt": "2026-11-25T21:05:00+08:00",
+      "note": "按旧图 S8 由 V4 单独供水，旧方案单关 V4 影响 6 户；工单引用旧拓扑 TOPO-V1。"
+    },
+    {
+      "code": "INC-2026-088",
+      "title": "滨河巷 S3 漏水抢修（已结案，旧图复演样本）",
+      "status": "CLOSED",
+      "boundarySegmentCodes": ["S3"],
+      "valveCodes": ["V3"],
+      "notify": true,
+      "createdAt": "2026-10-18T09:12:00+08:00",
+      "confirmedAt": "2026-10-18T09:20:00+08:00",
+      "closedAt": "2026-10-18T15:40:00+08:00",
+      "note": "结案时按当时竣工图 TOPO-V1 关 V3、影响 6 户并完成复压；历史不得被新拓扑改写。"
+    }
+  ]
+}

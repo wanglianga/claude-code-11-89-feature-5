@@ -48,6 +48,14 @@ public class Incident {
     @Column(nullable = false)
     private Integer revision = 1;
 
+    /**
+     * 成案时采用并固定的拓扑版本。新事故取当前 ACTIVE 版本；
+     * 拓扑发布不回写未确认事故的该字段，只有调度确认重审后才升级。
+     * 已结案事故始终按此版本旧图复演。
+     */
+    @Column(length = 40)
+    private String topologyVersionCode;
+
     @Column(length = 64)
     private String confirmedBy;
 
@@ -114,6 +122,14 @@ public class Incident {
 
     public void setRevision(Integer revision) {
         this.revision = revision;
+    }
+
+    public String getTopologyVersionCode() {
+        return topologyVersionCode;
+    }
+
+    public void setTopologyVersionCode(String topologyVersionCode) {
+        this.topologyVersionCode = topologyVersionCode;
     }
 
     public String getConfirmedBy() {

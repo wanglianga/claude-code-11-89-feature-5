@@ -48,6 +48,7 @@
   "permits": [
     { "code": "POP-V1", "name": "V1 阀门操作票（大阀）", "valveCode": "V1" },
     { "code": "POP-V2", "name": "V2 阀门操作票", "valveCode": "V2" },
-    { "code": "POP-V3", "name": "V3 阀门操作票", "valveCode": "V3" }
+    { "code": "POP-V3", "name": "V3 阀门操作票", "valveCode": "V3" },
+    { "code": "POP-V4", "name": "V4 文昌里阀门操作票", "valveCode": "V4" }
   ]
 }

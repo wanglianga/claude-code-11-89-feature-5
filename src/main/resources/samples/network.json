@@ -8,7 +8,12 @@
     { "code": "NV2",  "name": "V2 阀门井",        "type": "VALVE",  "lng": 120.0025, "lat": 30.0010 },
     { "code": "NE2",  "name": "幸福路北末端",     "type": "END",    "lng": 120.0026, "lat": 30.0014 },
     { "code": "NV3",  "name": "V3 阀门井",        "type": "VALVE",  "lng": 120.0015, "lat": 29.9996 },
-    { "code": "NE3",  "name": "滨河巷末端",       "type": "END",    "lng": 120.0027, "lat": 30.00135 }
+    { "code": "NE3",  "name": "滨河巷末端",       "type": "END",    "lng": 120.0027, "lat": 30.00135 },
+
+    { "code": "NE7",  "name": "文昌巷 S7 旧图盲端工作坑", "type": "END", "lng": 120.00105, "lat": 29.99915 },
+    { "code": "NV4",  "name": "V4 文昌里阀门井",  "type": "VALVE",  "lng": 120.00205, "lat": 29.99905 },
+    { "code": "NE8",  "name": "文昌里 S8 东端接点", "type": "TEE",   "lng": 120.00320, "lat": 29.99910 },
+    { "code": "NE9",  "name": "S8 远端疑似延伸末点（未测）", "type": "END", "lng": 120.00385, "lat": 29.99875 }
   ],
   "segments": [
     { "code": "M0",  "name": "干管 M0",        "from": "NSRC", "to": "NT0", "pMin": 0.20, "pMax": 0.46, "tolSec": 600 },
@@ -18,12 +23,18 @@
     { "code": "F2",  "name": "幸福路阀前连接", "from": "NT1",  "to": "NV2", "pMin": 0.22, "pMax": 0.45, "tolSec": 600 },
     { "code": "S2",  "name": "S2 幸福路支管",  "from": "NV2",  "to": "NE2", "pMin": 0.22, "pMax": 0.45, "tolSec": 600 },
     { "code": "F3",  "name": "滨河巷阀前连接", "from": "NT0",  "to": "NV3", "pMin": 0.18, "pMax": 0.40, "tolSec": 600 },
-    { "code": "S3",  "name": "S3 滨河巷支管",  "from": "NV3",  "to": "NE3", "pMin": 0.18, "pMax": 0.40, "tolSec": 600 }
+    { "code": "S3",  "name": "S3 滨河巷支管",  "from": "NV3",  "to": "NE3", "pMin": 0.18, "pMax": 0.40, "tolSec": 600 },
+
+    { "code": "S7",  "name": "S7 文昌巷支管（竣工图标为盲端）", "from": "NV3", "to": "NE7", "pMin": 0.18, "pMax": 0.40, "tolSec": 600 },
+    { "code": "F4",  "name": "文昌里阀前连接", "from": "NT0",  "to": "NV4", "pMin": 0.20, "pMax": 0.42, "tolSec": 600 },
+    { "code": "S8",  "name": "S8 文昌里支管",  "from": "NV4",  "to": "NE8", "pMin": 0.20, "pMax": 0.42, "tolSec": 600 },
+    { "code": "S9",  "name": "S9 S8 远端疑似支管（相邻未测，禁止纳入权威拓扑）", "from": "NE8", "to": "NE9", "pMin": 0.20, "pMax": 0.42, "tolSec": 600, "topologyStatus": "UNKNOWN" }
   ],
   "valves": [
     { "code": "V1", "name": "V1 建设路支线大阀", "nodeCode": "NV1", "qualification": "Q_VALVE_LARGE", "permit": "POP-V1" },
     { "code": "V2", "name": "V2 幸福路阀",       "nodeCode": "NV2", "qualification": "Q_VALVE_STD",   "permit": "POP-V2" },
-    { "code": "V3", "name": "V3 滨河巷阀",       "nodeCode": "NV3", "qualification": "Q_VALVE_STD",   "permit": "POP-V3" }
+    { "code": "V3", "name": "V3 滨河巷/文昌巷阀", "nodeCode": "NV3", "qualification": "Q_VALVE_STD",   "permit": "POP-V3" },
+    { "code": "V4", "name": "V4 文昌里阀",       "nodeCode": "NV4", "qualification": "Q_VALVE_STD",   "permit": "POP-V4" }
   ],
   "addresses": [
     { "code": "A01", "address": "幸福路1号",       "segment": "S2", "building": null,         "lng": 120.00251, "lat": 30.00102, "aliases": ["幸福路1号", "幸福路01号", "幸福路1号院"] },
@@ -40,7 +51,20 @@
     { "code": "A10", "address": "建设路1号",       "segment": "S1", "building": null, "lng": 120.0024, "lat": 30.00041, "aliases": ["建设路1号"] },
     { "code": "A11", "address": "建设路3号",       "segment": "S1", "building": null, "lng": 120.0026, "lat": 30.00041, "aliases": ["建设路3号"] },
     { "code": "A12", "address": "建设路5号",       "segment": "S1", "building": null, "lng": 120.0028, "lat": 30.00041, "aliases": ["建设路5号"] },
-    { "code": "A13", "address": "建设路7号",       "segment": "S1", "building": null, "lng": 120.00295, "lat": 30.00041, "aliases": ["建设路7号"] }
+    { "code": "A13", "address": "建设路7号",       "segment": "S1", "building": null, "lng": 120.00295, "lat": 30.00041, "aliases": ["建设路7号"] },
+
+    { "code": "A14", "address": "滨河巷9号",       "segment": "S7", "building": null, "lng": 120.00112, "lat": 29.99930, "aliases": ["滨河巷9号", "文昌巷1号"] },
+    { "code": "A15", "address": "滨河巷11号",      "segment": "S7", "building": null, "lng": 120.00108, "lat": 29.99920, "aliases": ["滨河巷11号", "文昌巷3号"] },
+
+    { "code": "A16", "address": "文昌里1号",       "segment": "S8", "building": null, "lng": 120.00225, "lat": 29.99912, "aliases": ["文昌里1号"] },
+    { "code": "A17", "address": "文昌里2号",       "segment": "S8", "building": null, "lng": 120.00242, "lat": 29.99916, "aliases": ["文昌里2号"] },
+    { "code": "A18", "address": "文昌里3号",       "segment": "S8", "building": null, "lng": 120.00260, "lat": 29.99918, "aliases": ["文昌里3号"] },
+    { "code": "A19", "address": "文昌里4号",       "segment": "S8", "building": null, "lng": 120.00278, "lat": 29.99918, "aliases": ["文昌里4号"] },
+    { "code": "A20", "address": "文昌里5号",       "segment": "S8", "building": null, "lng": 120.00296, "lat": 29.99916, "aliases": ["文昌里5号"] },
+    { "code": "A21", "address": "文昌里6号",       "segment": "S8", "building": null, "lng": 120.00312, "lat": 29.99912, "aliases": ["文昌里6号"] },
+
+    { "code": "A22", "address": "文昌里7号（远端待核）", "segment": "S9", "building": null, "lng": 120.00345, "lat": 29.99895, "aliases": ["文昌里7号"] },
+    { "code": "A23", "address": "文昌里8号（远端待核）", "segment": "S9", "building": null, "lng": 120.00370, "lat": 29.99885, "aliases": ["文昌里8号"] }
   ],
   "landmarks": [
     { "code": "LM-XF-BH", "name": "幸福路与滨河巷交叉口", "lng": 120.00261, "lat": 30.00137, "candidateSegments": ["S2", "S3"] }
